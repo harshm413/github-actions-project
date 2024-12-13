@@ -130,6 +130,10 @@ jobs:
         with:
           name: build-artifacts
 
+      - id: output-artifacts-content
+        name: Output Artifacts Content
+        run: ls
+
   deploy:
     name: Deploy Application
     needs: [build, test]
@@ -146,6 +150,16 @@ jobs:
           echo "Test Output: ${{ needs.test.outputs.test-output }}"
         env:
           DEPLOY_ENV: DeploymentJobEnvironmentValue
+
+      - id: download-artifacts
+        name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - id: output-artifacts-content
+        name: Output Artifacts Content
+        run: ls
 
       - id: save-deployment-output
         name: Save Deployment Output
