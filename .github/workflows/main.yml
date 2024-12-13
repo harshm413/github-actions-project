@@ -7,28 +7,28 @@ on:
       - main
     tags:
       - v*
-    branches-ignore:
-      - dev
-    tags-ignore:
-      - v0.*
+    #branches-ignore:
+      #- dev
+    #tags-ignore:
+      #- v0.*
     paths:
       - src/**
-    paths-ignore:
-      - docs/**
+    #paths-ignore:
+      #- docs/**
 
   pull_request:
     branches:
       - main
-    branches-ignore:
-      - feature/*
+    #branches-ignore:
+      #- feature/*
     types:
       - opened
       - synchronize
       - closed
     paths:
       - src/**
-    paths-ignore:
-      - docs/**
+    #paths-ignore:
+      #- docs/**
 
   schedule:
     - cron: "0 0 * * *" # Run daily at midnight
