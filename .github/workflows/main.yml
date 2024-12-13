@@ -85,9 +85,9 @@ jobs:
         name: Save Build Output
         run: |
           echo "build_status=success" >> $GITHUB_OUTPUT
-          echo "Custom Input Provided: ${{ inputs.custom-build-input }}"
-        with:
-          custom-build-input: custom-build-value
+          echo "Custom Input Provided: $CUSTOM_ENV"
+        env:
+          CUSTOM_ENV: custom-build-value
 
       - id: upload-artifacts
         name: Upload Build Artifacts
@@ -116,9 +116,9 @@ jobs:
           echo "TEST_ENV=$TEST_ENV"
           echo "GLOBAL_VAR=$GLOBAL_VAR"
           echo "Build Output: ${{ needs.build.outputs.build-output }}"
-          echo "Test Param Provided: ${{ inputs.test-param }}"
-        with:
-          test-param: test-param-value
+          echo "Test Param Provided: $CUSTOM_PARAM"
+        env:
+          CUSTOM_PARAM: test-param-value
 
       - id: save-test-output
         name: Save Test Output
