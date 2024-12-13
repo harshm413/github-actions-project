@@ -1,0 +1,152 @@
+name: CI/CD Pipeline
+run-name: Execute CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    branches-ignore:
+      - dev
+    tags-ignore:
+      - v0.*
+    paths:
+      - src/**
+    paths-ignore:
+      - docs/**
+
+  pull_request:
+    branches:
+      - main
+    branches-ignore:
+      - feature/*
+    types:
+      - opened
+      - synchronize
+      - closed
+    paths:
+      - src/**
+    paths-ignore:
+      - docs/**
+
+  schedule:
+    - cron: "0 0 * * *" # Run daily at midnight
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      version:
+        description: "Version number to deploy"
+        required: false
+        type: string
+
+env:
+  GLOBAL_VAR: GlobalEnvironmentVariableValue
+
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    env:
+      BUILD_ENV: BuildJobEnvironmentValue
+    outputs:
+      build-output: ${{ steps.save-build-output.outputs.build_status }}
+    steps:
+      - id: checkout-code
+        name: Checkout Code
+        uses: actions/checkout@v3
+
+      - id: install-dependencies
+        name: Install Dependencies
+        run: |
+          echo "Installing dependencies..."
+          echo "GLOBAL_VAR=$GLOBAL_VAR"
+          echo "BUILD_ENV=$BUILD_ENV"
+          npm install
+
+      - id: build-project
+        name: Build Project
+        run: |
+          echo "Building Vite React project..."
+          echo "NODE_ENV=$NODE_ENV"
+          npm run build
+        env:
+          NODE_ENV: production
+
+      - id: save-build-output
+        name: Save Build Output
+        run: |
+          echo "build_status=success" >> $GITHUB_OUTPUT
+          echo "Custom Input Provided: ${{ inputs.custom-build-input }}"
+        with:
+          custom-build-input: custom-build-value
+
+      - id: upload-artifacts
+        name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist
+
+  test:
+    name: Run Tests
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      TEST_ENV: TestJobEnvironmentValue
+    outputs:
+      test-output: ${{ steps.save-test-output.outputs.test_status }}
+    steps:
+      - id: checkout-code
+        name: Checkout Code
+        uses: actions/checkout@v3
+
+      - id: run-tests
+        name: Run Tests
+        run: |
+          echo "Running tests..."
+          echo "TEST_ENV=$TEST_ENV"
+          echo "GLOBAL_VAR=$GLOBAL_VAR"
+          echo "Build Output: ${{ needs.build.outputs.build-output }}"
+          echo "Test Param Provided: ${{ inputs.test-param }}"
+        with:
+          test-param: test-param-value
+
+      - id: save-test-output
+        name: Save Test Output
+        run: echo "test_status=passed" >> $GITHUB_OUTPUT
+
+      - id: download-artifacts
+        name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+  deploy:
+    name: Deploy Application
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    outputs:
+      deployment-status: ${{ steps.save-deployment-output.outputs.deployment_status }}
+    steps:
+      - id: deploy-to-env
+        name: Deploy to Environment
+        run: |
+          echo "Deploying Vite React application..."
+          echo "DEPLOY_ENV=$DEPLOY_ENV"
+          echo "GLOBAL_VAR=$GLOBAL_VAR"
+          echo "Test Output: ${{ needs.test.outputs.test-output }}"
+        env:
+          DEPLOY_ENV: DeploymentJobEnvironmentValue
+
+      - id: save-deployment-output
+        name: Save Deployment Output
+        run: echo "deployment_status=success" >> $GITHUB_OUTPUT
