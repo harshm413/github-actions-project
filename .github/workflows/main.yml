@@ -30,8 +30,8 @@ on:
     #paths-ignore:
       #- docs/**
 
-  schedule:
-    - cron: "0 0 * * *" # Run daily at midnight
+  # schedule:
+  #   - cron: "0 0 * * *" # Run daily at midnight
 
   workflow_dispatch:
     inputs:
